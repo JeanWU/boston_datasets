@@ -52,27 +52,28 @@ def about(request):
 
 from app.forms import BootstrapCurveFittingForm
 def T1LL_input(request):
-        
+    a =1 +1
+
     return render(
         request,
         'app/fitting_input.html',
         context_instance = RequestContext(request,
-        { 
+        {
             'title':'Fitting Input',
             'form': BootstrapCurveFittingForm,
+            'test123':a
                })
     )
 
 
 def T1LL_result(request):
     import pyFitMR.Fitting_lib as FB
-    
+
     t_value = request.POST.get('t_value')
     y_value = request.POST.get('y_value')
-    fitted_result_dict = FB.T1fitting(t_value, y_value)  
+    fitted_result_dict = FB.T1fitting(t_value, y_value)
     return render(
         request,
         'app/fitting_result.html',
         context_instance = RequestContext(request, fitted_result_dict)
        )
-
