@@ -67,13 +67,31 @@ def T1LL_input(request):
 
 
 def T1LL_result(request):
-    import pyFitMR.Fitting_lib as FB
+    #import pyFitMR.Fitting_lib as FB
+    from django.conf import settings
+    import os
+    #print(settings.PROJECT_ROOT)
+    import numpy
 
-    t_value = request.POST.get('t_value')
-    y_value = request.POST.get('y_value')
-    fitted_result_dict = FB.T1fitting(t_value, y_value)
-    return render(
-        request,
-        'app/fitting_result.html',
-        context_instance = RequestContext(request, fitted_result_dict)
-       )
+    crime=request.POST.get('crime')
+    zn=request.POST.get('zn')
+    inidus=request.POST.get('inidus')
+    nox=request.POST.get('nox')
+    rm=request.POST.get('rm')
+    age=request.POST.get('age')
+    dis=request.POST.get('dis')
+    rad=request.POST.get('rad')
+    tax=request.POST.get('tax')
+    ptratio=request.POST.get('ptratio')
+    Bk=request.POST.get('Bk')
+    lstat=request.POST.get('lstat')
+    optradio=request.POST.get('optradio')
+
+    x = numpy.array([crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat], dtype=numpy.float64)
+    print(ptratio)
+    from sklearn.externals import joblib
+    lr=joblib.load(os.path.join(settings.PROJECT_ROOT,'app','lrmachine.pkl'))
+    y=lr.predict(x)
+    #lr.predict([crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat])
+    return render(        request,        'app/fitting_result.html',        context_instance = RequestContext(request, fitted_result_dict)       )
+    #return HttpResponse(y)
