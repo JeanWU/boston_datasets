@@ -67,12 +67,6 @@ def T1LL_input(request):
 
 
 def T1LL_result(request):
-    #import pyFitMR.Fitting_lib as FB
-    from django.conf import settings
-    import os
-    #print(settings.PROJECT_ROOT)
-    import numpy
-
     crime=request.POST.get('crime')
     zn=request.POST.get('zn')
     inidus=request.POST.get('inidus')
@@ -87,11 +81,74 @@ def T1LL_result(request):
     lstat=request.POST.get('lstat')
     optradio=request.POST.get('optradio')
 
-    x = numpy.array([crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat], dtype=numpy.float64)
-    print(ptratio)
-    from sklearn.externals import joblib
-    lr=joblib.load(os.path.join(settings.PROJECT_ROOT,'app','lrmachine.pkl'))
-    y=lr.predict(x)
+    MEDV = bonston_fitting(crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat)
+    pic = plot(crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat)
+    result_dict={
+        "MEDV":MEDV,
+        "pic":pic
+    }
     #lr.predict([crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat])
-    return render(        request,        'app/fitting_result.html',        context_instance = RequestContext(request, fitted_result_dict)       )
+    return render(
+    request,
+    'app/boston_result.html',
+    context_instance = RequestContext(request, result_dict)       )
     #return HttpResponse(y)
+
+def bonston_fitting(crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat):
+    from django.conf import settings
+    import os
+    import numpy as np
+    from sklearn.externals import joblib
+
+    lr=joblib.load(os.path.join(settings.PROJECT_ROOT,'app','lrmachine.pkl'))
+    #my_variable =[0.02729,0,7.07,0,0.469,7.185,61.1,4.9671,2,242,17.8,39.283,9.14]
+    #Y=lr.predict(np.array(my_variable))
+
+    if not crime:
+        my_variable =[0.02729,0,7.07,0,0.469,7.185,61.1,4.9671,2,242,17.8,39.283,9.14]
+        Y=lr.predict(np.array(my_variable))
+    else:
+        x = np.array([crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat], dtype=np.float64)
+        Y=lr.predict(x)
+
+    return Y
+
+def plot(crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat):
+    from django.conf import settings
+    import os, matplotlib.pyplot as plt
+    from sklearn.externals import joblib
+    try:
+        from StringIO import StringIO
+    except ImportError:
+        from io import StringIO
+    from sklearn import datasets
+    from sklearn.cross_validation import cross_val_predict
+    import numpy as np
+
+    lr=joblib.load(os.path.join(settings.PROJECT_ROOT,'app','lrmachine.pkl'))
+    boston = datasets.load_boston()
+    y = boston.target
+    Y=bonston_fitting(crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat)
+
+    try:
+        predicted = cross_val_predict(lr, boston.data, y, cv=10)
+        predict_y=Y
+
+        plt.figure(1)
+        plt.clf()
+        plt.scatter(predicted,y)
+        plt.plot(predict_y, predict_y, 'ro')
+        plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=4)
+        plt.xlabel('Predicted')
+        plt.ylabel('Measured')
+        fig = plt.gcf()
+        fig.set_size_inches(10,6)
+        #plt.gca().axhline(0, color='black', lw=2)
+        plt.gca().grid(True)
+
+        #plt.gca().set_axis_bgcolor('white')
+        rv = StringIO()
+        plt.savefig(rv, format="svg")
+        return rv.getvalue()
+    finally:
+        plt.clf()
