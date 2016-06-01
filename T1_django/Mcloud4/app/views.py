@@ -85,12 +85,15 @@ def T1LL_result(request):
     pic_linear = linear_plot(crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat)
     MEDV_SVR = SVR_fitting(crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat)
     pic_SVR = SVR_plot(crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat)
+    script, div = bokeh_plot(crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat)
 
     result_dict={
         "MEDV_linear":MEDV_linear,
         "pic_linear":pic_linear,
         "MEDV_SVR":MEDV_SVR,
-        "pic_SVR":pic_SVR
+        "pic_SVR":pic_SVR,
+        "the_script":script,
+        "the_div":div
     }
     #lr.predict([crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat])
     return render(
@@ -216,3 +219,30 @@ def SVR_plot(crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat):
         return rv.getvalue()
     finally:
         plt.clf()
+
+
+def bokeh_plot(crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat):
+    from django.conf import settings
+    import os
+    from sklearn.externals import joblib
+    from sklearn import datasets
+    from bokeh.plotting import figure, show, output_file
+    from bokeh.resources import CDN
+    from bokeh.embed import components
+
+    clf=joblib.load(os.path.join(settings.PROJECT_ROOT,'app','machine_SVR.pkl'))
+    boston = datasets.load_boston()
+    y = boston.target
+    Y=SVR_fitting(crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat)
+
+
+    predicted = clf.predict(boston.data)
+    predict_y=Y
+    p = figure(title = "Boston dataset")
+    p.xaxis.axis_label = 'Measured'
+    p.yaxis.axis_label = 'Predicted'
+
+    p.scatter(y,predicted)
+    p.asterisk(x=predict_y, y=predict_y, size=20, color="#F0027F")
+    script, div = components(p, CDN)
+    return script, div
