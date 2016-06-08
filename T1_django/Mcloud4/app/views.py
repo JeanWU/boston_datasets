@@ -13,10 +13,11 @@ def home(request):
     assert isinstance(request, HttpRequest)
     return render(
         request,
-        'app/index.html',
+        #'app/index.html',
+        'app/fitting_input.html',
         context_instance = RequestContext(request,
         {
-            'title':'Home Page',
+            'title':'Property Value Prediction',
             'year':datetime.now().year,
         })
     )
@@ -30,7 +31,7 @@ def contact(request):
         context_instance = RequestContext(request,
         {
             'title':'Contact',
-            'message':'Your contact page.',
+            #'message':'Your contact page.',
             'year':datetime.now().year,
         })
     )
@@ -44,7 +45,7 @@ def about(request):
         context_instance = RequestContext(request,
         {
             'title':'About',
-            'message':'Your application description page.',
+            'message':'This is a website providing you the prediction of your property value.',
             'year':datetime.now().year,
         })
     )
@@ -52,7 +53,6 @@ def about(request):
 
 from app.forms import BootstrapCurveFittingForm
 def T1LL_input(request):
-    a =1 +1
 
     return render(
         request,
@@ -60,8 +60,7 @@ def T1LL_input(request):
         context_instance = RequestContext(request,
         {
             'title':'Fitting Input',
-            'form': BootstrapCurveFittingForm,
-            'test123':a
+            'form': BootstrapCurveFittingForm
                })
     )
 
@@ -95,7 +94,6 @@ def T1LL_result(request):
         "the_script":script,
         "the_div":div
     }
-    #lr.predict([crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat])
     return render(
     request,
     'app/boston_result.html',
@@ -109,8 +107,6 @@ def linear_fitting(crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,ls
     from sklearn.externals import joblib
 
     lr=joblib.load(os.path.join(settings.PROJECT_ROOT,'app','lrmachine.pkl'))
-    #my_variable =[0.02729,0,7.07,0,0.469,7.185,61.1,4.9671,2,242,17.8,39.283,9.14]
-    #Y=lr.predict(np.array(my_variable))
 
     if not crime:
         my_variable =[0.02729,0,7.07,0,0.469,7.185,61.1,4.9671,2,242,17.8,39.283,9.14]
@@ -151,10 +147,8 @@ def linear_plot(crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat
         plt.ylabel('Measured')
         fig = plt.gcf()
         fig.set_size_inches(10,6)
-        #plt.gca().axhline(0, color='black', lw=2)
         plt.gca().grid(True)
 
-        #plt.gca().set_axis_bgcolor('white')
         rv = StringIO()
         plt.savefig(rv, format="svg")
         return rv.getvalue()
@@ -168,8 +162,6 @@ def SVR_fitting(crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat
     from sklearn.externals import joblib
 
     clf=joblib.load(os.path.join(settings.PROJECT_ROOT,'app','machine_SVR.pkl'))
-    #my_variable =[0.02729,0,7.07,0,0.469,7.185,61.1,4.9671,2,242,17.8,39.283,9.14]
-    #Y=lr.predict(np.array(my_variable))
 
     if not crime:
         my_variable =[0.02729,0,7.07,0,0.469,7.185,61.1,4.9671,2,242,17.8,39.283,9.14]
@@ -210,10 +202,8 @@ def SVR_plot(crime,zn,inidus,optradio,nox,rm,age,dis,rad,tax,ptratio,Bk,lstat):
         plt.ylabel('Measured')
         fig = plt.gcf()
         fig.set_size_inches(10,6)
-        #plt.gca().axhline(0, color='black', lw=2)
         plt.gca().grid(True)
 
-        #plt.gca().set_axis_bgcolor('white')
         rv = StringIO()
         plt.savefig(rv, format="svg")
         return rv.getvalue()
